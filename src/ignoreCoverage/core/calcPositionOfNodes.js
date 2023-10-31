@@ -1,26 +1,8 @@
 
 import * as d3 from 'd3-force-3d';
-/**
-let d3
-async function loadModule() {
-    d3 = await import('d3-force-3d');
-    console.log(d3.default); // if there's a default export you want to log
-}
-    */
 
-// Global constants
-
-function getDefaultBounds(){
-    const bounds = {
-        x: { min: 0, max: 100 },
-        y: { min: 0, max: 100 },
-        z: { min: 0, max: 100 }
-    };
-    return bounds;
-}
-
-function getVrBounds(){
-    let radius = 2
+export function getVrBounds(){
+    let radius = 0.5
     let yOffset = 0.5
     let zOffset = 0.5
     const bounds = {
@@ -229,13 +211,15 @@ function setPositionAndSizeToData(nodes, data){
 }
 
 
-export async function calcPositionOfNodes(data) {
+export async function calcPositionOfNodes(data, bounds) {
     console.log("Start calcPositionOfNodes");
     let copy = JSON.parse(JSON.stringify(data))
     const nodeIds = checkForMalformedNodes(copy);
     const { nodes, links } = extractNodesAndLinks(copy);
     runSimulation(nodes, links, copy);
-    let bounds = getVrBounds();
+    if(!bounds){
+        bounds = getVrBounds();
+    }
     normalizeNodePositions(nodes, bounds);
     setPositionAndSizeToData(nodes, copy);
     return copy;

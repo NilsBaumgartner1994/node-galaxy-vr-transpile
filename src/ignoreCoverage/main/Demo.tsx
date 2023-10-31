@@ -19,10 +19,11 @@ import {WebIdeFileExplorerDropZone} from "../webIDE/WebIdeFileExplorerDropZone";
 import {WebIdeCodeActionBarViews} from "../webIDE/WebIdeActionBarViews";
 import {DataClumpsTypeContext} from "data-clumps-type-context";
 
+import { InputNumber } from 'primereact/inputnumber';
 import Editor from '@monaco-editor/react';
 import {Button} from "primereact/button";
 import {transpileDataClumpsTypeContextToNodes} from "../core/transpileDataClumpsTypeContextToNodes";
-import {calcPositionOfNodes} from "../core/calcPositionOfNodes";
+import {calcPositionOfNodes, getVrBounds} from "../core/calcPositionOfNodes";
 import DownloadHelper from "../helper/DownloadHelper";
 
 export interface DemoProps {
@@ -37,6 +38,16 @@ export const Demo : FunctionComponent<DemoProps> = (props) => {
 
     const [openedFiles, setOpenedFiles] = useSynchedOpenedFiles();
     const [loading, setLoading] = useState(false);
+
+
+
+    const [transpileSettings, setTranspileSettings] = useState(getVrBounds());
+
+    const handleInputChangeOfBoundingBox = (axis, field, value) => {
+        const updatedSettings = { ...transpileSettings };
+        updatedSettings[axis][field] = value;
+        setTranspileSettings(updatedSettings);
+    };
 
     let onAbort = async () => {
         //console.log("Demo: onAbort")
@@ -63,8 +74,6 @@ export const Demo : FunctionComponent<DemoProps> = (props) => {
         modalOptions.visible = true;
         modalOptions.content = "Loading project...";
         setModalOptions(modalOptions);
-        setOpenedFiles([]);
-        setActiveFileKey(null);
         modalOptions.visible = false;
         modalOptions.content = "";
         setModalOptions(modalOptions);
@@ -72,8 +81,7 @@ export const Demo : FunctionComponent<DemoProps> = (props) => {
         console.log("fileContent");
         console.log(fileContent);
         setInputFileContent(fileContent);
-        // @ts-ignore
-        setEditorValue(fileContent);
+        await handleTranspile(fileContent)
     }
 
     function handleEditorChange(value, event) {
@@ -126,17 +134,21 @@ export const Demo : FunctionComponent<DemoProps> = (props) => {
         )
     }
 
+    async function handleTranspile(inputFileContent){
+        let content = inputFileContent+""
+        let testClumps = JSON.parse(content)
+        let transpiledAsNodesList = transpileDataClumpsTypeContextToNodes(testClumps);
+        let calculated = await calcPositionOfNodes(transpiledAsNodesList)
+        let calculatedAsString = JSON.stringify(calculated, null, 4);
+        // @ts-ignore
+        setOutputValue(calculatedAsString)
+    }
+
     function renderTranspileButton(){
         return(
             <div style={{width: "100%"}}>
                 <Button onClick={async () => {
-                    let content = inputFileContent+""
-                    let testClumps = JSON.parse(content)
-                    let transpiledAsNodesList = transpileDataClumpsTypeContextToNodes(testClumps);
-                    let calculated = await calcPositionOfNodes(transpiledAsNodesList)
-                    let calculatedAsString = JSON.stringify(calculated, null, 4);
-                    // @ts-ignore
-                    setOutputValue(calculatedAsString)
+                    handleTranspile(inputFileContent)
                 }}><div>{"Transpile"}</div></Button>
             </div>
         )
@@ -152,11 +164,42 @@ export const Demo : FunctionComponent<DemoProps> = (props) => {
         )
     }
 
+    function renderBoundingBoxSettings(){
+        return (
+            <div style={{width: "100%", display: "flex", flexDirection: "row"}}>
+                {['x', 'y', 'z'].map(axis => (
+                    <div key={axis}>
+                        <h3>{axis.toUpperCase()}</h3>
+                        {['min', 'max'].map(field => (
+                            <div key={field} style={{ marginBottom: '10px' }}>
+                                <label>{field} {axis.toUpperCase()}:</label>
+                                <InputNumber
+                                    value={transpileSettings[axis][field]}
+                                    onValueChange={(e) => {
+                                        handleInputChangeOfBoundingBox(axis, field, e.value)
+                                        setOutputValue(null)
+                                    }}
+                                    mode="decimal"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                ))}
+            </div>
+        );
+    }
+
     function renderTopContent(){
         return(
-            <div style={{width: "100%", display: "flex", flexDirection: "row"}}>
-                {renderTranspileButton()}
-                {renderDownloadButton()}
+            <div style={{width: "100%", display: "flex", flexDirection: "column"}}>
+                <div style={{width: "100%", display: "flex", flexDirection: "row"}}>
+                    {renderBoundingBoxSettings()}
+                </div>
+                <div style={{width: "100%",height: 5, backgroundColor: "transparent"}}></div>                <div style={{width: "100%", display: "flex", flexDirection: "row"}}>
+                    {renderTranspileButton()}
+                    {renderDownloadButton()}
+                </div>
+                <div style={{width: "100%",height: 15, backgroundColor: "transparent"}}></div>
             </div>
         )
     }

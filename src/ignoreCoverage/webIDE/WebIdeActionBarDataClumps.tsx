@@ -78,6 +78,7 @@ export const WebIdeCodeActionBarDataClumps : FunctionComponent<WebIdeCodeActionB
                 }
             ]
         },
+        /**
         {
             label:'Test',
             icon:'pi pi-fw pi-cog',
@@ -85,31 +86,26 @@ export const WebIdeCodeActionBarDataClumps : FunctionComponent<WebIdeCodeActionB
                 test()
             }
         },
+            */
         {
             label:'All right reserved 2023 (C)',
             icon: <div style={{marginRight: "8px"}}>{"§"}</div>,
             items:[
                 {
-                    label: "Nils Baumgartner",
-                    icon: "pi pi-fw pi-user",
-                    url: "https://nilsbaumgartner.de"
-                },
-                {
                     label:'GitHub project',
                     icon:'pi pi-fw pi-github',
-                    url: "https://github.com/FireboltCasters/node-galaxy-vr-transpile"
+                    url: "https://github.com/baumgartner-software/node-galaxy-vr-transpile"
                 },
                 {
                     label:'Homepage',
                     icon:'pi pi-fw pi-external-link',
-                    url: "https://nilsbaumgartner.de"
+                    url: "https://baumgartner-software.de"
                 },
             ]
         }
     ];
 
-    let remoteLogoUrl = "https://github.com/NilsBaumgartner1994/node-galaxy-vr-transpile/raw/master/public/logo.png"
-    let localLogoUrl = "./logo.png"
+    let remoteLogoUrl = "https://raw.githubusercontent.com/baumgartner-software/node-galaxy-vr/main/icon.jpeg"
     let logoUrl = remoteLogoUrl;
 
     let startItem = (
